@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
+if [ -z "${REPO_ROOT}" ]; then
+  exit 0
+fi
+
+# Post-commit is advisory only; never block commit history.
+bash "${REPO_ROOT}/.agents/hooks/validate-assets.sh" || true

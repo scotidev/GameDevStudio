@@ -47,6 +47,18 @@ git clone <repo-url> my-game
 cd my-game
 ```
 
+Install git hooks for Copilot CLI terminal enforcement:
+
+```bash
+bash scripts/setup-git-hooks.sh
+```
+
+Windows PowerShell alternative:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup-git-hooks.ps1
+```
+
 ### Step 0.2: Run /start (Recommended for New Users)
 
 If you're new to the project or don't yet know what game you're building:
@@ -91,6 +103,17 @@ but won't be primary.
 > `AGENTS.md` directly if you prefer.
 
 ### Step 0.3: Verify Hooks Are Working
+
+For Copilot CLI terminal mode, verify git hooks first by creating an empty test commit.
+
+```bash
+git commit --allow-empty -m "hook smoke test"
+```
+
+The `pre-commit` hook should execute validations.
+
+Runtime session hooks like `session-start.sh` are environment-dependent.
+If your runtime supports `.agents/settings.json` hooks, you should also see:
 
 Start a new Copilot session. You should see output from the
 `session-start.sh` hook:

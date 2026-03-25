@@ -13,6 +13,20 @@ Flow State, Bartle Player Types). Use whichever engine set matches your project.
 
 ## How to Use
 
+### 0. Install Git Hooks (Copilot CLI)
+
+For terminal-first Copilot CLI workflows, install the repository git hooks first:
+
+```bash
+bash scripts/setup-git-hooks.sh
+```
+
+Windows PowerShell alternative:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup-git-hooks.ps1
+```
+
 ### 1. Understand the Hierarchy
 
 There are three tiers of agents:

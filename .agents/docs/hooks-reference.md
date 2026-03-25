@@ -1,5 +1,14 @@
 # Active Hooks
 
+For Copilot CLI terminal workflows, install git hooks with:
+
+```bash
+bash scripts/setup-git-hooks.sh
+```
+
+The project also includes runtime hook definitions in `.agents/settings.json` for
+Claude-compatible environments.
+
 Hooks are configured in `.agents/settings.json` and fire automatically:
 
 | Hook                 | Event                    | Trigger               | Action                                                                                                                                             |

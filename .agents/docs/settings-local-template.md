@@ -3,6 +3,10 @@
 Create `.agents/settings.local.json` for personal overrides that should NOT
 be committed to version control. Add it to `.gitignore`.
 
+Note: this file is for runtimes that consume `.agents/settings*.json` directly.
+For Copilot CLI in terminal mode, use git hooks (`scripts/setup-git-hooks.*`) as
+the primary enforcement mechanism.
+
 ## Example settings.local.json
 
 ```json

@@ -1,23 +1,23 @@
 #!/bin/bash
-# Copilot PreToolUse hook: Validates git commit commands
-# Receives JSON on stdin with tool_input.command
-# Exit 0 = allow, Exit 2 = block (stderr shown to Copilot)
-#
-# Input schema (PreToolUse for Bash):
-# { "tool_name": "Bash", "tool_input": { "command": "git commit -m ..." } }
+# Validates commit content in two modes:
+# 1) Claude/Copilot JSON hook mode (stdin contains tool_input.command)
+# 2) Native git pre-commit hook mode (no stdin payload)
+# Exit 0 = allow, Exit 2 = block
 
 INPUT=$(cat)
 
-# Parse command -- use jq if available, fall back to grep
-if command -v jq >/dev/null 2>&1; then
-    COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
-else
-    COMMAND=$(echo "$INPUT" | grep -oE '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
-fi
+if [ -n "$INPUT" ]; then
+    # Parse command from JSON payload -- use jq if available, fall back to grep
+    if command -v jq >/dev/null 2>&1; then
+        COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+    else
+        COMMAND=$(echo "$INPUT" | grep -oE '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
+    fi
 
-# Only process git commit commands
-if ! echo "$COMMAND" | grep -qE '^git[[:space:]]+commit'; then
-    exit 0
+    # If payload exists but is not a commit command, skip.
+    if ! echo "$COMMAND" | grep -qE '^git[[:space:]]+commit'; then
+        exit 0
+    fi
 fi
 
 # Get staged files

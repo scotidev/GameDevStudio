@@ -96,9 +96,22 @@ Type `/` in Copilot Code to access all 37 skills:
 
 - [Git](https://git-scm.com/)
 - Agentic CLI
+- Git Bash (recommended on Windows)
 - **Recommended**: [jq](https://jqlang.github.io/jq/) (for hook validation) and Python 3 (for JSON validation)
 
 All hooks fail gracefully if optional tools are missing - nothing breaks, you just lose validation.
+
+For Copilot CLI in terminal, install git hooks locally to enforce commit/push checks:
+
+```bash
+bash scripts/setup-git-hooks.sh
+```
+
+On PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/setup-git-hooks.ps1
+```
 
 ### Setup
 
@@ -134,7 +147,7 @@ versions, and which files are safe to overwrite vs. which need a manual merge.
 ```
 AGENTS.md                           # Master configuration
 .agents/
-  settings.json                     # Hooks, permissions, safety rules
+  settings.json                     # Legacy runtime hooks/permissions (Claude-compatible)
   agents/                           # 48 agent definitions (markdown + YAML frontmatter)
   skills/                           # 37 slash commands (subdirectory per skill)
   hooks/                            # 8 hook scripts (bash, cross-platform)
@@ -181,7 +194,20 @@ You stay in control. The agents provide structure and expertise, not autonomy.
 
 ### Automated Safety
 
-**Hooks** run automatically on every session:
+Safety is provided in two layers:
+
+1. **Git hooks (Copilot CLI path)** installed via `scripts/setup-git-hooks.*`
+2. **Runtime hooks in `.agents/settings.json`** for Claude-compatible runtimes
+
+Git hooks installed for Copilot CLI:
+
+| Hook          | Trigger      | What It Does                                                                |
+| ------------- | ------------ | --------------------------------------------------------------------------- |
+| `pre-commit`  | `git commit` | Runs `validate-commit.sh` (design/doc checks, JSON validity, code warnings) |
+| `pre-push`    | `git push`   | Runs `validate-push.sh` (protected branch warnings)                         |
+| `post-commit` | Commit done  | Runs `validate-assets.sh` in advisory mode                                  |
+
+Runtime hooks defined in `.agents/settings.json`:
 
 | Hook                 | Trigger                  | What It Does                                                                                    |
 | -------------------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
@@ -194,7 +220,7 @@ You stay in control. The agents provide structure and expertise, not autonomy.
 | `session-stop.sh`    | Session close            | Logs accomplishments                                                                            |
 | `log-agent.sh`       | Agent spawned            | Audit trail of all subagent invocations                                                         |
 
-**Permission rules** in `settings.json` auto-allow safe operations (git status, test runs) and block dangerous ones (force push, `rm -rf`, reading `.env` files).
+`settings.json` permission rules apply only in runtimes that implement that schema. In Copilot CLI terminal mode, rely on git hooks plus repository policy/CI for enforcement.
 
 ### Path-Scoped Rules
 

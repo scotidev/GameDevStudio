@@ -1,23 +1,24 @@
 #!/bin/bash
-# Copilot PreToolUse hook: Validates git push commands
-# Warns on pushes to protected branches
+# Validates push intent in two modes:
+# 1) Claude/Copilot JSON hook mode (stdin contains tool_input.command)
+# 2) Native git pre-push hook mode (no stdin payload, script is invoked directly)
 # Exit 0 = allow, Exit 2 = block
-#
-# Input schema (PreToolUse for Bash):
-# { "tool_name": "Bash", "tool_input": { "command": "git push origin main" } }
 
 INPUT=$(cat)
+COMMAND=""
 
-# Parse command -- use jq if available, fall back to grep
-if command -v jq >/dev/null 2>&1; then
-    COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
-else
-    COMMAND=$(echo "$INPUT" | grep -oE '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
-fi
+if [ -n "$INPUT" ]; then
+    # Parse command -- use jq if available, fall back to grep
+    if command -v jq >/dev/null 2>&1; then
+        COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+    else
+        COMMAND=$(echo "$INPUT" | grep -oE '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
+    fi
 
-# Only process git push commands
-if ! echo "$COMMAND" | grep -qE '^git[[:space:]]+push'; then
-    exit 0
+    # If payload exists but is not a push command, skip.
+    if ! echo "$COMMAND" | grep -qE '^git[[:space:]]+push'; then
+        exit 0
+    fi
 fi
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
